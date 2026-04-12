@@ -6,12 +6,12 @@
   <title>How to Use TimeWeave — Guide</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <style>
     .how-container {
       max-width: 800px;
-      margin: 80px auto;
+      margin: 60px auto;
       padding: 0 28px;
     }
     .how-header {
@@ -19,8 +19,9 @@
       margin-bottom: 60px;
     }
     .how-title {
-      font-size: 2.5rem;
-      font-weight: 800;
+      font-family: 'Libre Baskerville', serif;
+      font-size: clamp(2rem, 5vw, 2.8rem);
+      font-weight: 700;
       margin-bottom: 16px;
     }
     .step-card {
@@ -28,25 +29,39 @@
       gap: 32px;
       margin-bottom: 48px;
       align-items: flex-start;
+      background: rgba(255,255,255,0.3);
+      padding: 30px;
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border-faded);
+      box-shadow: var(--shadow-card);
+      position: relative;
+    }
+    .step-card::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: 
+        repeating-linear-gradient(rgba(183, 175, 163, 0.03) 0 1px, transparent 1px 20px),
+        repeating-linear-gradient(90deg, rgba(183, 175, 163, 0.03) 0 1px, transparent 1px 20px);
+      pointer-events: none;
     }
     .step-num {
       width: 48px;
       height: 48px;
-      background: var(--acc);
+      background: var(--accent-sage);
       color: #fff;
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
+      font-weight: 700;
       font-size: 1.25rem;
       flex-shrink: 0;
-      box-shadow: 0 0 20px var(--acc-glow);
+      font-family: 'Libre Baskerville', serif;
     }
     .step-content h3 {
+      font-family: 'Libre Baskerville', serif;
       font-size: 1.25rem;
       margin-bottom: 12px;
-      color: #fff;
+      color: var(--text);
     }
     .step-content p {
       color: var(--text-dim);
@@ -55,34 +70,22 @@
     }
     .visual-hint {
       margin-top: 16px;
-      background: var(--bg3);
-      padding: 12px;
+      background: rgba(132, 169, 140, 0.1);
+      padding: 16px;
       border-radius: var(--radius-sm);
-      border: 1px solid var(--border);
-      font-family: monospace;
-      font-size: 0.85rem;
-      color: var(--acc);
-    }
-    .back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 40px;
+      border: 1px solid var(--border-light);
+      font-size: 0.9rem;
       color: var(--text-dim);
-      text-decoration: none;
-      font-weight: 600;
-      transition: var(--transition);
     }
-    .back-btn:hover {
-      color: #fff;
-    }
+    .visual-hint b { color: var(--text); }
+    
     @media (max-width: 600px) {
-      .step-card { flex-direction: column; gap: 16px; }
+      .step-card { flex-direction: column; gap: 16px; padding: 20px; }
       .how-title { font-size: 1.8rem; }
     }
   </style>
 </head>
-<body>
+<body class="gingham-subtle">
   <nav class="navbar">
     <div class="nav-inner">
       <div class="brand">
@@ -95,13 +98,13 @@
         <span class="brand-name">TimeWeave</span>
       </div>
       <div class="nav-actions">
-        <a href="index.html" class="btn-primary">Back to App</a>
+        <a href="index.html" class="btn-primary" style="text-decoration:none;">Back to App</a>
       </div>
     </div>
   </nav>
 
   <main class="how-container">
-    <header class="how-header" style="margin-top: 40px;">
+    <header class="how-header">
       <h1 class="how-title">How <span class="gradient-text">TimeWeave</span> Works</h1>
       <p class="hero-sub">Scheduling across timezones is a nightmare. This tool makes it a visual breeze. Here's how to master it in 30 seconds.</p>
     </header>
@@ -110,7 +113,7 @@
       <div class="step-num">1</div>
       <div class="step-content">
         <h3>Add your team members</h3>
-        <p>Type a name and select their specific city or timezone. Don't worry about UTC offsets; we handle daylight savings and everything automatically using the browser's built-in intelligence.</p>
+        <p>Type a name and select their specific city or timezone. Don't worry about UTC offsets; we handle daylight savings and everything automatically using native browser intelligence.</p>
       </div>
     </div>
 
@@ -118,19 +121,19 @@
       <div class="step-num">2</div>
       <div class="step-content">
         <h3>Set their working hours</h3>
-        <p>Define when each person is usually "at their desk" in their <strong>own local time</strong> (e.g., 9 AM to 5 PM). The grid will immediately update to show their availability relative to yours.</p>
+        <p>Define when each person is usually "at their desk" in their <strong>own local time</strong> (e.g., 9 AM to 5 PM). You can add multiple work shifts if they take mid-day breaks.</p>
       </div>
     </div>
 
     <div class="step-card">
       <div class="step-num">3</div>
       <div class="step-content">
-        <h3>Read the Grid</h3>
-        <p>The 24-hour grid shows everyone's relative availability. </p>
+        <h3>Read the Vintage Grid</h3>
+        <p>The 24-hour grid shows everyone's relative availability in the vintage professional color system.</p>
         <div class="visual-hint">
-          • Purple = Working<br>
-          • Green = Everyone is working at once!<br>
-          • Amber ✨ = The best possible slot for your meeting duration
+          • <b>Sage Green</b> = Member is working<br>
+          • <b>Vintage Blue</b> = Unanimous meeting intersection! 🌏<br>
+          • <b>Dusty Rose</b> ✨ = The currently selected meeting window
         </div>
       </div>
     </div>
@@ -139,22 +142,14 @@
       <div class="step-num">4</div>
       <div class="step-content">
         <h3>Cycle through "Best Windows"</h3>
-        <p>If there are multiple times everyone is free, use the <strong>"Next Window →"</strong> button in the bottom gold bar to highlight alternative options. Change the "Meeting Duration" in settings to find longer or shorter blocks.</p>
-      </div>
-    </div>
-
-    <div class="step-card">
-      <div class="step-num">5</div>
-      <div class="step-content">
-        <h3>Export and Share</h3>
-        <p>Once you find a perfect time, click <strong>"Export Schedule"</strong>. We generated a pre-formatted summary you can paste directly into Slack or email so everyone knows when to jump on the call.</p>
+        <p>If there are multiple times everyone is free, use the <strong>"Next Window →"</strong> button in the bottom summary bar to cycle through options. Adjust the "Meeting Duration" in settings to find longer or shorter blocks.</p>
       </div>
     </div>
 
   </main>
 
-  <footer style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.8rem;">
-    TimeWeave • Built for remote-first teams.
+  <footer style="text-align: center; padding: 60px 40px; color: var(--text-muted); font-size: 0.8rem;">
+    TimeWeave • Designed for remote-first professional teams.
   </footer>
 </body>
 </html>

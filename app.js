@@ -92,13 +92,7 @@ const gridPlaceholderEl= document.getElementById('gridPlaceholder');
 const summaryBarEl     = document.getElementById('summaryBar');
 const summaryTextEl    = document.getElementById('summaryText');
 const cycleBestBtn     = document.getElementById('cycleBestBtn');
-const exportBtn        = document.getElementById('exportBtn');
 const clearAllBtn      = document.getElementById('clearAllBtn');
-const exportModal      = document.getElementById('exportModal');
-const modalClose       = document.getElementById('modalClose');
-const modalCloseBtn    = document.getElementById('modalCloseBtn');
-const exportTextEl     = document.getElementById('exportText');
-const copyExportBtn    = document.getElementById('copyExportBtn');
 const toastEl          = document.getElementById('toast');
 
 /* ── Init ── */
@@ -120,12 +114,7 @@ function init() {
   meetingDurEl.addEventListener('change', () => { bestWindowIdx = 0; renderGrid(); });
   highlightBestEl.addEventListener('change', () => { bestWindowIdx = 0; renderGrid(); });
   cycleBestBtn.addEventListener('click', cycleBestWindow);
-  exportBtn.addEventListener('click', openExport);
   clearAllBtn.addEventListener('click', clearAll);
-  modalClose.addEventListener('click', closeExport);
-  modalCloseBtn.addEventListener('click', closeExport);
-  exportModal.addEventListener('click', e => { if (e.target === exportModal) closeExport(); });
-  copyExportBtn.addEventListener('click', copyExport);
 }
 
 /* ── Slot Row Logic ── */
@@ -628,56 +617,7 @@ function cycleBestWindow() {
   renderGrid();
 }
 
-/* ── Export ── */
-function openExport() {
-  const viewTz = viewTzEl.value;
-  const lines  = [];
-  const dur    = parseInt(meetingDurEl.value);
-  const durLabel = dur === 1 ? '30 min' : dur === 2 ? '1 hour' : dur === 3 ? '1.5 hrs' : '2 hrs';
 
-  lines.push('═══════════════════════════════════════');
-  lines.push('         TimeWeave — Meeting Schedule   ');
-  lines.push('═══════════════════════════════════════');
-  lines.push(`Generated: ${new Date().toLocaleString()}`);
-  lines.push(`Duration needed: ${durLabel}`);
-  lines.push('');
-  lines.push('TEAM MEMBERS:');
-  members.forEach(m => {
-    const now  = nowIn(m.tz);
-    const slotsTxt = m.slots.map(s => `${s.start}:00–${s.end}:00`).join(', ');
-    lines.push(`  • ${m.name}  |  ${m.tz}  |  Works ${slotsTxt} local  |  Now: ${now}`);
-  });
-  lines.push('');
-
-  if (bestWindows.length === 0) {
-    lines.push('⚠  No full-overlap windows found for this duration.');
-    lines.push('   Try reducing meeting duration or adjusting working hours.');
-  } else {
-    lines.push(`BEST MEETING WINDOWS (${bestWindows.length} found):`);
-    bestWindows.forEach((bw, i) => {
-      const start = slotToLabel(bw.startSlot, viewTz);
-      const end   = slotToLabel(Math.min(bw.startSlot + dur, HALF_HOURS-1), viewTz);
-      lines.push(`  ${i+1}. ${start} → ${end}  (${viewTzEl.options[viewTzEl.selectedIndex]?.textContent?.replace(/\(.*?\)\s*/,'').trim() || viewTz})`);
-    });
-  }
-  lines.push('');
-  lines.push('───────────────────────────────────────');
-  lines.push('Made with TimeWeave — timeweave.vercel.app');
-
-  exportTextEl.value = lines.join('\n');
-  exportModal.style.display = 'flex';
-}
-
-function closeExport() { exportModal.style.display = 'none'; }
-
-function copyExport() {
-  navigator.clipboard.writeText(exportTextEl.value).then(() => {
-    showToast('Copied to clipboard! 📋', 'success');
-  }).catch(() => {
-    exportTextEl.select(); document.execCommand('copy');
-    showToast('Copied! 📋', 'success');
-  });
-}
 
 /* ── localStorage ── */
 function saveToStorage() {
