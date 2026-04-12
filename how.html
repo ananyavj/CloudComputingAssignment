@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How to Use TimeWeave — Guide</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .how-container {
+      max-width: 800px;
+      margin: 80px auto;
+      padding: 0 28px;
+    }
+    .how-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    .how-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+    .step-card {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 48px;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 48px;
+      height: 48px;
+      background: var(--acc);
+      color: #fff;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+      box-shadow: 0 0 20px var(--acc-glow);
+    }
+    .step-content h3 {
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+    .step-content p {
+      color: var(--text-dim);
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+    .visual-hint {
+      margin-top: 16px;
+      background: var(--bg3);
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      font-family: monospace;
+      font-size: 0.85rem;
+      color: var(--acc);
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 40px;
+      color: var(--text-dim);
+      text-decoration: none;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+    .back-btn:hover {
+      color: #fff;
+    }
+    @media (max-width: 600px) {
+      .step-card { flex-direction: column; gap: 16px; }
+      .how-title { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <span class="brand-name">TimeWeave</span>
+      </div>
+      <div class="nav-actions">
+        <a href="index.html" class="btn-primary">Back to App</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="how-container">
+    <header class="how-header" style="margin-top: 40px;">
+      <h1 class="how-title">How <span class="gradient-text">TimeWeave</span> Works</h1>
+      <p class="hero-sub">Scheduling across timezones is a nightmare. This tool makes it a visual breeze. Here's how to master it in 30 seconds.</p>
+    </header>
+
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>Add your team members</h3>
+        <p>Type a name and select their specific city or timezone. Don't worry about UTC offsets; we handle daylight savings and everything automatically using the browser's built-in intelligence.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>Set their working hours</h3>
+        <p>Define when each person is usually "at their desk" in their <strong>own local time</strong> (e.g., 9 AM to 5 PM). The grid will immediately update to show their availability relative to yours.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>Read the Grid</h3>
+        <p>The 24-hour grid shows everyone's relative availability. </p>
+        <div class="visual-hint">
+          • Purple = Working<br>
+          • Green = Everyone is working at once!<br>
+          • Amber ✨ = The best possible slot for your meeting duration
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <h3>Cycle through "Best Windows"</h3>
+        <p>If there are multiple times everyone is free, use the <strong>"Next Window →"</strong> button in the bottom gold bar to highlight alternative options. Change the "Meeting Duration" in settings to find longer or shorter blocks.</p>
+      </div>
+    </div>
+
+    <div class="step-card">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <h3>Export and Share</h3>
+        <p>Once you find a perfect time, click <strong>"Export Schedule"</strong>. We generated a pre-formatted summary you can paste directly into Slack or email so everyone knows when to jump on the call.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <footer style="text-align: center; padding: 40px; color: var(--text-muted); font-size: 0.8rem;">
+    TimeWeave • Built for remote-first teams.
+  </footer>
+</body>
+</html>

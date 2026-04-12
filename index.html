@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TimeWeave — Remote Team Meeting Planner</title>
+  <meta name="description" content="Visually find the best meeting time for your remote team across any timezone — no sign-up, no API keys." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="paper-texture">
+  <!-- ── VINTAGE OVERLAY ── -->
+  <div class="vintage-overlay"></div>
+
+  <!-- ── NAVBAR ── -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <span class="brand-name">TimeWeave</span>
+      </div>
+      <div class="nav-actions">
+        <a href="how.html" class="btn-ghost" style="text-decoration: none;">How it works</a>
+        <button class="btn-ghost" id="clearAllBtn" title="Clear all members">Clear All</button>
+        <button class="btn-primary" id="exportBtn">Export Schedule</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <header class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-content">
+      <div class="hero-badge">🌍 Zero setup · No account needed</div>
+      <h1 class="hero-title">Find the perfect<br /><span class="gradient-text">meeting time</span> instantly</h1>
+      <p class="hero-sub">Add your remote team members and their timezones. TimeWeave overlays everyone's working hours and highlights the windows where everyone's available.</p>
+    </div>
+  </header>
+
+  <!-- ── MAIN ── -->
+  <main class="main-container">
+
+    <!-- SIDEBAR: add member -->
+    <aside class="sidebar">
+      <div class="card add-card">
+        <div class="card-header">
+          <h2 class="card-title">Add Team Member</h2>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="memberName">Name</label>
+          <input class="form-input" id="memberName" type="text" placeholder="e.g. Ananya" maxlength="30" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="tzSelect">Timezone</label>
+          <div class="select-wrapper">
+            <select class="form-input" id="tzSelect"></select>
+            <span class="select-arrow">▾</span>
+          </div>
+        </div>
+        <div class="form-group works-hours-group">
+          <label class="form-label">Working hours (local)</label>
+          <div id="slotsContainer">
+            <!-- Slot rows injected here by JS -->
+          </div>
+          <button class="btn-ghost btn-full" id="addSlotBtn" style="margin-top: 8px; border-style: dashed;">
+            + Add Work Slot
+          </button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Color</label>
+          <div class="color-picker" id="colorPicker"></div>
+        </div>
+        <div class="form-actions" style="display: flex; gap: 8px;">
+          <button class="btn-primary btn-full" id="addMemberBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Member
+          </button>
+          <button class="btn-ghost" id="cancelEditBtn" style="display: none;">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Member list -->
+      <div class="card members-card">
+        <div class="card-header">
+          <h2 class="card-title">Team Roster <span class="badge" id="memberCount">0</span></h2>
+        </div>
+        <ul class="members-list" id="membersList">
+          <li class="empty-state" id="emptyState">
+            <div class="empty-icon">👥</div>
+            <span>No members yet.<br/>Add someone above!</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- settings -->
+      <div class="card settings-card">
+        <div class="card-header">
+          <h2 class="card-title">Settings</h2>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="viewTz">View grid in timezone</label>
+          <div class="select-wrapper">
+            <select class="form-input" id="viewTz"></select>
+            <span class="select-arrow">▾</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="meetingDuration">Meeting duration</label>
+          <div class="select-wrapper">
+            <select class="form-input" id="meetingDuration">
+              <option value="1">30 minutes</option>
+              <option value="2" selected>1 hour</option>
+              <option value="3">1.5 hours</option>
+              <option value="4">2 hours</option>
+            </select>
+            <span class="select-arrow">▾</span>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <label class="form-label" for="highlightBest">Highlight best windows</label>
+          <label class="toggle">
+            <input type="checkbox" id="highlightBest" checked />
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+    </aside>
+
+    <!-- GRID -->
+    <section class="grid-section">
+
+      <!-- legend & time header -->
+      <div class="grid-topbar">
+        <div class="grid-topbar-left">
+          <h2 class="section-title">24-Hour Overlap View</h2>
+          <p class="section-sub" id="viewTzLabel">Viewing in local time</p>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><span class="legend-dot legend-working"></span>Available</div>
+          <div class="legend-item"><span class="legend-dot legend-overlap"></span>Intersection</div>
+          <div class="legend-item"><span class="legend-dot legend-best"></span>Selected ✨</div>
+        </div>
+      </div>
+
+      <!-- time ruler -->
+      <div class="time-ruler" id="timeRuler"></div>
+
+      <!-- member rows -->
+      <div class="overlap-grid" id="overlapGrid">
+        <div class="grid-placeholder" id="gridPlaceholder">
+          <div class="placeholder-icon">🌐</div>
+          <p>Add at least one team member to see the overlap grid.</p>
+        </div>
+      </div>
+
+      <!-- summary bar -->
+      <div class="summary-bar" id="summaryBar" style="display:none">
+        <div class="summary-inner">
+          <div class="summary-icon">✨</div>
+          <div class="summary-text" id="summaryText"></div>
+          <button class="btn-outline" id="cycleBestBtn">Next Window →</button>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- EXPORT MODAL -->
+  <div class="modal-overlay" id="exportModal" style="display:none">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Export Schedule</h3>
+        <button class="modal-close" id="modalClose">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-hint">Copy this summary to paste into Slack, Notion, or email 🚀</p>
+        <textarea class="export-textarea" id="exportText" readonly></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" id="copyExportBtn">Copy to Clipboard</button>
+        <button class="btn-ghost" id="modalCloseBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
