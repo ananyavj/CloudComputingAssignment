@@ -130,6 +130,16 @@
           </label>
         </div>
       </div>
+
+      <!-- Recent Sessions (History) -->
+      <div class="card history-card" id="historyCard" style="display: none;">
+        <div class="card-header">
+          <h2 class="card-title">Recent Sessions</h2>
+        </div>
+        <ul class="history-list" id="historyList">
+          <!-- History items injected here -->
+        </ul>
+      </div>
     </aside>
 
     <!-- GRID -->
@@ -145,6 +155,9 @@
           <div class="legend-item"><span class="legend-dot legend-working"></span>Available</div>
           <div class="legend-item"><span class="legend-dot legend-overlap"></span>Intersection</div>
           <div class="legend-item"><span class="legend-dot legend-best"></span>Selected ✨</div>
+          <button class="btn-primary" id="finishBtn" style="margin-left: 10px; display: none;">
+             Finish & Review
+          </button>
         </div>
       </div>
 
@@ -174,6 +187,32 @@
   </main>
 
 
+
+
+  <!-- REVIEW MODAL -->
+  <div class="modal-backdrop" id="reviewModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Review Team Schedule</h2>
+        <button class="modal-close" id="closeReviewBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-intro">Review the team member details before finalizing and exporting the report.</p>
+        <div class="review-list" id="reviewList">
+          <!-- Team summary items -->
+        </div>
+        <div class="review-stats" id="reviewStats">
+          <!-- Best window summary -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" id="cancelReviewBtn">Go Back</button>
+        <button class="btn-primary" id="proceedSaveBtn">
+          Proceed to Save & Download
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- TOAST -->
   <div class="toast" id="toast"></div>

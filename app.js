@@ -70,6 +70,7 @@ let bestWindows  = [];   // [{startSlot, len}]
 let bestWindowIdx = 0;
 let tickInterval  = null;
 let editingMemberId = null; // null or member id
+let sessionHistory  = [];   // last 3 sessions
 
 /* ── DOM refs ── */
 const memberNameEl     = document.getElementById('memberName');
@@ -95,6 +96,17 @@ const cycleBestBtn     = document.getElementById('cycleBestBtn');
 const clearAllBtn      = document.getElementById('clearAllBtn');
 const toastEl          = document.getElementById('toast');
 
+// New Refs
+const finishBtn        = document.getElementById('finishBtn');
+const historyCard      = document.getElementById('historyCard');
+const historyList      = document.getElementById('historyList');
+const reviewModal      = document.getElementById('reviewModal');
+const reviewList       = document.getElementById('reviewList');
+const reviewStats      = document.getElementById('reviewStats');
+const closeReviewBtn   = document.getElementById('closeReviewBtn');
+const cancelReviewBtn  = document.getElementById('cancelReviewBtn');
+const proceedSaveBtn   = document.getElementById('proceedSaveBtn');
+
 /* ── Init ── */
 function init() {
   populateTzSelects();
@@ -115,6 +127,14 @@ function init() {
   highlightBestEl.addEventListener('change', () => { bestWindowIdx = 0; renderGrid(); });
   cycleBestBtn.addEventListener('click', cycleBestWindow);
   clearAllBtn.addEventListener('click', clearAll);
+
+  // New Listeners
+  finishBtn.addEventListener('click', openReviewModal);
+  closeReviewBtn.addEventListener('click', closeReviewModal);
+  cancelReviewBtn.addEventListener('click', closeReviewModal);
+  proceedSaveBtn.addEventListener('click', proceedToSave);
+  
+  loadHistory();
 }
 
 /* ── Slot Row Logic ── */
@@ -529,6 +549,9 @@ function renderGrid() {
   }
 
   updateSummary(bestWindows, viewTz, duration);
+  
+  // Show finish button if members exist
+  finishBtn.style.display = members.length > 0 ? 'inline-flex' : 'none';
 }
 
 /* Convert a 30-min slot index in the VIEW timezone to the local hour in a MEMBER's timezone */
@@ -603,12 +626,28 @@ function updateSummary(windows, viewTz, duration) {
   const endSlot = Math.min(bw.startSlot + duration, HALF_HOURS - 1);
   const endLabel = slotToLabel(endSlot, viewTz);
   const durationLabel = duration === 1 ? '30 min' : duration === 2 ? '1 hour' : duration === 3 ? '1.5 hours' : '2 hours';
+  
+  // Build inline timezone select
+  let tzOpts = '';
+  TIMEZONES.forEach(tz => {
+    tzOpts += `<option value="${tz.value}" ${tz.value === viewTz ? 'selected' : ''}>${tz.label.replace(/\(.*?\)\s*/, '')}</option>`;
+  });
+
   summaryTextEl.innerHTML = `
     <strong>${windows.length} overlap window${windows.length > 1 ? 's' : ''} found!</strong>
     Best for a <strong>${durationLabel}</strong> meeting:
-    <strong>${startLabel} → ${endLabel}</strong> (in ${viewTzEl.options[viewTzEl.selectedIndex]?.textContent?.replace(/\(.*?\)\s*/,'') || 'view TZ'}).
+    <strong>${startLabel} → ${endLabel}</strong> (in <select class="summary-tz-select">${tzOpts}</select>).
     Window ${(bestWindowIdx % windows.length) + 1} of ${windows.length}.
   `;
+
+  // Attach listener to inline select
+  const inlineTz = summaryTextEl.querySelector('.summary-tz-select');
+  inlineTz.addEventListener('change', (e) => {
+    viewTzEl.value = e.target.value;
+    bestWindowIdx = 0;
+    renderGrid();
+  });
+
   cycleBestBtn.style.display = windows.length > 1 ? '' : 'none';
 }
 
@@ -618,6 +657,210 @@ function cycleBestWindow() {
 }
 
 
+
+/* ── SESSION HISTORY ── */
+function saveHistory() {
+  try { localStorage.setItem('tw_history', JSON.stringify(sessionHistory)); } catch {}
+  renderHistory();
+}
+
+function loadHistory() {
+  try {
+    const stored = localStorage.getItem('tw_history');
+    if (stored) sessionHistory = JSON.parse(stored);
+    renderHistory();
+  } catch {}
+}
+
+function renderHistory() {
+  if (sessionHistory.length === 0) {
+    historyCard.style.display = 'none';
+    return;
+  }
+  historyCard.style.display = 'block';
+  historyList.innerHTML = '';
+  
+  sessionHistory.forEach((session, i) => {
+    const li = document.createElement('li');
+    li.className = 'history-item';
+    const date = new Date(session.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    li.innerHTML = `
+      <div class="history-info">
+        <div class="history-name">${session.members.length} member${session.members.length > 1 ? 's' : ''}</div>
+        <div class="history-date">${date}</div>
+      </div>
+      <div class="history-actions">
+        <div class="history-badge">#${sessionHistory.length - i}</div>
+        <button class="history-delete" title="Delete session">✕</button>
+      </div>
+    `;
+    li.addEventListener('click', () => confirmLoadHistory(i));
+    li.querySelector('.history-delete').addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteHistory(i);
+    });
+    historyList.appendChild(li);
+  });
+}
+
+function deleteHistory(idx) {
+  if (!confirm('Delete this session from history?')) return;
+  sessionHistory.splice(idx, 1);
+  saveHistory();
+  showToast('Session deleted.', 'success');
+}
+
+function confirmLoadHistory(idx) {
+  if (members.length > 0 && !confirm('Load this session? Your current unsaved changes will be replaced.')) return;
+  const session = sessionHistory[idx];
+  members = JSON.parse(JSON.stringify(session.members));
+  saveToStorage();
+  renderMemberList();
+  renderGrid();
+  showToast('Session loaded from history! ✨', 'success');
+}
+
+/* ── REVIEW MODAL ── */
+function openReviewModal() {
+  reviewList.innerHTML = '';
+  members.forEach(m => {
+    const item = document.createElement('div');
+    item.className = 'review-item';
+    const slotsTxt = m.slots.map(s => `${s.start}:00–${s.end}:00`).join(', ');
+    item.innerHTML = `
+      <div class="member-dot" style="background:${m.color}; width:20px; height:20px;"></div>
+      <div class="review-item-info">
+        <div class="review-item-name">${escHtml(m.name)}</div>
+        <div class="review-item-slots">${slotsTxt} (${m.tz})</div>
+      </div>
+    `;
+    reviewList.appendChild(item);
+  });
+
+  // Summary stats
+  const viewTz = viewTzEl.value;
+  const duration = parseInt(meetingDurEl.value);
+  const durationLabel = duration === 1 ? '30 min' : duration === 2 ? '1 hour' : duration === 3 ? '1.5 hours' : '2 hours';
+  
+  if (bestWindows.length > 0) {
+    const bw = bestWindows[0]; // first best window
+    const start = slotToLabel(bw.startSlot, viewTz);
+    const end = slotToLabel(Math.min(bw.startSlot + duration, HALF_HOURS - 1), viewTz);
+    reviewStats.innerHTML = `
+      <div style="font-weight:700; color:var(--accent-sage); margin-bottom:4px;">✨ Best Window Found</div>
+      <div style="font-size:0.9rem;">${start} → ${end} (${durationLabel})</div>
+      <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">In ${viewTzEl.options[viewTzEl.selectedIndex].text}</div>
+    `;
+  } else {
+    reviewStats.innerHTML = `<div style="color:var(--accent-rose); font-weight:700;">No overlap window found.</div>`;
+  }
+
+  reviewModal.classList.add('show');
+}
+
+function closeReviewModal() {
+  reviewModal.classList.remove('show');
+}
+
+function proceedToSave() {
+  // Push to history
+  const newSession = {
+    timestamp: Date.now(),
+    members: JSON.parse(JSON.stringify(members))
+  };
+  
+  sessionHistory.unshift(newSession);
+  if (sessionHistory.length > 3) sessionHistory.pop();
+  saveHistory();
+  
+  // Export
+  exportToHtml();
+  
+  closeReviewModal();
+  showToast('Session saved & report downloaded! 📂', 'success');
+}
+
+/* ── EXPORT TO HTML ── */
+function exportToHtml() {
+  const viewTz = viewTzEl.value;
+  const viewTzName = viewTzEl.options[viewTzEl.selectedIndex].text;
+  const dateStr = new Date().toLocaleString();
+  
+  let membersHtml = '';
+  members.forEach(m => {
+    const slots = m.slots.map(s => `${s.start}:00-${s.end}:00`).join(', ');
+    membersHtml += `
+      <div style="margin-bottom:15px; padding:15px; border:1px solid #ddd; border-radius:8px; background:#fff;">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+          <div style="width:12px; height:12px; border-radius:3px; background:${m.color};"></div>
+          <strong style="font-size:1.1rem;">${escHtml(m.name)}</strong>
+        </div>
+        <div style="font-size:0.9rem; color:#666;">Timezone: ${m.tz}</div>
+        <div style="font-size:0.9rem; color:#666;">Working Hours (local): ${slots}</div>
+      </div>
+    `;
+  });
+
+  let bestWindowHtml = 'None found.';
+  if (bestWindows.length > 0) {
+    bestWindowHtml = '<ul>';
+    bestWindows.forEach((bw, i) => {
+      if (i > 4) return; // limit to 5
+      const start = slotToLabel(bw.startSlot, viewTz);
+      const duration = parseInt(meetingDurEl.value);
+      const end = slotToLabel(Math.min(bw.startSlot + duration, HALF_HOURS - 1), viewTz);
+      bestWindowHtml += `<li><strong>${start} – ${end}</strong></li>`;
+    });
+    bestWindowHtml += '</ul>';
+  }
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>TimeWeave Report - ${dateStr}</title>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f9f7f2; color: #333; line-height: 1.6; padding: 40px; }
+    .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border: 1px solid #ddd; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    h1 { font-family: 'Georgia', serif; color: #2e2e2e; border-bottom: 2px solid #e38690; padding-bottom: 10px; }
+    .meta { font-size: 0.85rem; color: #888; margin-bottom: 30px; }
+    .section-title { font-size: 1.2rem; font-weight: 700; margin: 30px 0 15px; color: #5f7682; border-left: 4px solid #84a98c; padding-left: 10px; }
+    .best-box { background: #f0f4f1; border: 1px solid #84a98c; border-radius: 8px; padding: 20px; margin-bottom: 30px; }
+    footer { margin-top: 40px; text-align: center; font-size: 0.8rem; color: #aaa; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>TimeWeave Meeting Report</h1>
+    <div class="meta">Generated on ${dateStr} • Timezone: ${viewTzName}</div>
+    
+    <div class="best-box">
+      <div style="font-weight:700; color:#52796f; margin-bottom:10px;">✨ Best Meeting Windows (${viewTzName})</div>
+      ${bestWindowHtml}
+    </div>
+
+    <div class="section-title">Team Roster</div>
+    ${membersHtml}
+
+    <footer>
+      Generated by TimeWeave — Remote Team Meeting Planner
+    </footer>
+  </div>
+</body>
+</html>
+  `;
+
+  const blob = new Blob([htmlContent], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `TimeWeave_Report_${new Date().toISOString().slice(0,10)}.html`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
 
 /* ── localStorage ── */
 function saveToStorage() {
